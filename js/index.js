@@ -1,6 +1,6 @@
 import { md5 } from 'hash-wasm';
 import SparkMD5 from 'spark-md5';
-import nodeMd5 from 'md5';
+import MD5 from 'md5.js';
 
 const init = async () => {
   let rustApp;
@@ -47,7 +47,8 @@ const init = async () => {
 
   const calcMd5WithNodeMd5 = () => {
     const t0 = window.performance.now();
-    const md5Web = nodeMd5(base64);
+    const md5 = new MD5();
+    const md5Web = md5.update(base64).digest('hex');
     const t1 = window.performance.now();
     console.log('md5', { delta: t1 - t0, md5: md5Web });
   };
