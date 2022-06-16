@@ -25,47 +25,78 @@ const init = async () => {
   };
 
   const calcMd5WithMd5Wasm = () => {
-    const t0 = window.performance.now();
-    const md5Wasm = rustApp.digest(base64);
-    const t1 = window.performance.now();
-    console.log('rust-md5-wasm', { delta: t1 - t0, md5: md5Wasm });
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const t0 = window.performance.now();
+        const md5Wasm = rustApp.digest(base64);
+        const t1 = window.performance.now();
+        document.getElementById('result-rust-md5-wasm').innerText = t1 - t0;
+        document.getElementById('checksum-rust-md5-wasm').innerText = md5Wasm;
+        console.log('rust-md5-wasm', { delta: t1 - t0, md5: md5Wasm });
+        resolve({ delta: t1 - t0, md5: md5Wasm });
+      });
+    });
   };
 
   const calcMd5WithCryptoWasm = () => {
-    const t0 = window.performance.now();
-    const md5Wasm = rustApp.md5(base64);
-    const t1 = window.performance.now();
-    console.log('rust-crypto-wasm', { delta: t1 - t0, md5: md5Wasm });
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const t0 = window.performance.now();
+        const md5Wasm = rustApp.md5(base64);
+        const t1 = window.performance.now();
+        document.getElementById('result-rust-crypto-wasm').innerText = t1 - t0;
+        document.getElementById('checksum-rust-crypto-wasm').innerText = md5Wasm;
+        console.log('rust-crypto-wasm', { delta: t1 - t0, md5: md5Wasm });
+        resolve({ delta: t1 - t0, md5: md5Wasm });
+      });
+    });
   };
 
   const calcMd5WithHashWasm = async () => {
     const t0 = window.performance.now();
     const md5Wasm = await md5(base64);
     const t1 = window.performance.now();
+    document.getElementById('result-hash-wasm').innerText = t1 - t0;
+    document.getElementById('checksum-hash-wasm').innerText = md5Wasm;
     console.log('hash-wasm', { delta: t1 - t0, md5: md5Wasm });
+    return { delta: t1 - t0, md5: md5Wasm };
   };
 
   const calcMd5WithNodeMd5 = () => {
-    const t0 = window.performance.now();
-    const md5 = new MD5();
-    const md5Web = md5.update(base64).digest('hex');
-    const t1 = window.performance.now();
-    console.log('md5', { delta: t1 - t0, md5: md5Web });
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const t0 = window.performance.now();
+        const md5 = new MD5();
+        const md5Web = md5.update(base64).digest('hex');
+        const t1 = window.performance.now();
+        document.getElementById('result-md5').innerText = t1 - t0;
+        document.getElementById('checksum-md5').innerText = md5Web;
+        console.log('md5', { delta: t1 - t0, md5: md5Web });
+        resolve({ delta: t1 - t0, md5: md5Web });
+      });
+    });
   };
 
   const calcMd5WithSparkMd5 = () => {
-    const t0 = window.performance.now();
-    const md5Web = SparkMD5.hash(base64);
-    const t1 = window.performance.now();
-    console.log('spark-md5', { delta: t1 - t0, md5: md5Web });
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const t0 = window.performance.now();
+        const md5Web = SparkMD5.hash(base64);
+        const t1 = window.performance.now();
+        document.getElementById('result-spark-md5').innerText = t1 - t0;
+        document.getElementById('checksum-spark-md5').innerText = md5Web;
+        console.log('spark-md5', { delta: t1 - t0, md5: md5Web });
+        resolve({ delta: t1 - t0, md5: md5Web });
+      });
+    });
   };
 
   const runAll = async () => {
-    calcMd5WithMd5Wasm();
-    calcMd5WithCryptoWasm();
+    await calcMd5WithMd5Wasm();
+    await calcMd5WithCryptoWasm();
     await calcMd5WithHashWasm();
-    calcMd5WithNodeMd5();
-    calcMd5WithSparkMd5();
+    await calcMd5WithNodeMd5();
+    await calcMd5WithSparkMd5();
   };
 
   document.getElementById('run-all').addEventListener('click', runAll);
