@@ -1,6 +1,6 @@
-import { md5 } from 'hash-wasm';
-import SparkMD5 from 'spark-md5';
+import { md5 as hash_wasm_md5 } from 'hash-wasm';
 import MD5 from 'md5.js';
+import SparkMD5 from 'spark-md5';
 
 const init = async () => {
   let rustApp;
@@ -28,7 +28,7 @@ const init = async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const t0 = window.performance.now();
-        const md5Wasm = rustApp.digest(base64);
+        const md5Wasm = rustApp.md5(base64);
         const t1 = window.performance.now();
         document.getElementById('result-rust-md5-wasm').innerText = t1 - t0;
         document.getElementById('checksum-rust-md5-wasm').innerText = md5Wasm;
@@ -42,7 +42,7 @@ const init = async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const t0 = window.performance.now();
-        const md5Wasm = rustApp.md5(base64);
+        const md5Wasm = rustApp.ya_md5(base64);
         const t1 = window.performance.now();
         document.getElementById('result-rust-crypto-wasm').innerText = t1 - t0;
         document.getElementById('checksum-rust-crypto-wasm').innerText = md5Wasm;
@@ -54,7 +54,7 @@ const init = async () => {
 
   const calcMd5WithHashWasm = async () => {
     const t0 = window.performance.now();
-    const md5Wasm = await md5(base64);
+    const md5Wasm = await hash_wasm_md5(base64);
     const t1 = window.performance.now();
     document.getElementById('result-hash-wasm').innerText = t1 - t0;
     document.getElementById('checksum-hash-wasm').innerText = md5Wasm;

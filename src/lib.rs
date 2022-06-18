@@ -26,14 +26,13 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 // }
 
 #[wasm_bindgen]
-pub fn digest(str: &str) -> String {
+pub fn md5(str: &str) -> String {
     let digest = md5::compute(str);
-    let res = format!("{:x}", digest);
-    return res;
+    format!("{:x}", digest)
 }
 
 #[wasm_bindgen]
-pub fn md5(input: &str) -> String {
+pub fn ya_md5(input: &str) -> String {
     let mut hasher = Md5::new();
     hasher.input_str(input);
     hasher.result_str()
