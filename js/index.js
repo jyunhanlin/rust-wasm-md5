@@ -18,6 +18,7 @@ const init = async () => {
 
   input.addEventListener('change', () => {
     fileReader.readAsDataURL(input.files[0]);
+    document.getElementById('file-name').innerText = input.files[0].name;
   });
 
   fileReader.onloadend = () => {
@@ -91,25 +92,17 @@ const init = async () => {
     });
   };
 
-  const runAll = async () => {
+  document.getElementById('run-all').addEventListener('click', async function () {
+    this.classList.add('is-loading');
+    this.setAttribute('disabled', 'disabled');
     await calcMd5WithMd5Wasm();
     await calcMd5WithCryptoWasm();
     await calcMd5WithHashWasm();
     await calcMd5WithNodeMd5();
     await calcMd5WithSparkMd5();
-  };
-
-  document.getElementById('run-all').addEventListener('click', runAll);
-
-  // document.getElementById('rust-md5-wasm').addEventListener('click', calcMd5WithMd5Wasm);
-
-  // document.getElementById('rust-crypto-wasm').addEventListener('click', calcMd5WithCryptoWasm);
-
-  // document.getElementById('hash-wasm').addEventListener('click', calcMd5WithHashWasm);
-
-  // document.getElementById('md5').addEventListener('click', calcMd5WithNodeMd5);
-
-  // document.getElementById('spark-md5').addEventListener('click', calcMd5WithSparkMd5);
+    this.classList.remove('is-loading');
+    this.removeAttribute('disabled');
+  });
 };
 
 document.addEventListener('DOMContentLoaded', init);
