@@ -101,15 +101,15 @@ const init = async () => {
 
   document.getElementById('run-all').addEventListener('click', runAll);
 
-  document.getElementById('rust-md5-wasm').addEventListener('click', calcMd5WithMd5Wasm);
+  // document.getElementById('rust-md5-wasm').addEventListener('click', calcMd5WithMd5Wasm);
 
-  document.getElementById('rust-crypto-wasm').addEventListener('click', calcMd5WithCryptoWasm);
+  // document.getElementById('rust-crypto-wasm').addEventListener('click', calcMd5WithCryptoWasm);
 
-  document.getElementById('hash-wasm').addEventListener('click', calcMd5WithHashWasm);
+  // document.getElementById('hash-wasm').addEventListener('click', calcMd5WithHashWasm);
 
-  document.getElementById('md5').addEventListener('click', calcMd5WithNodeMd5);
+  // document.getElementById('md5').addEventListener('click', calcMd5WithNodeMd5);
 
-  document.getElementById('spark-md5').addEventListener('click', calcMd5WithSparkMd5);
+  // document.getElementById('spark-md5').addEventListener('click', calcMd5WithSparkMd5);
 };
 
 document.addEventListener('DOMContentLoaded', init);
