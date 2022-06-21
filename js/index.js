@@ -1,6 +1,7 @@
 import { md5 as hash_wasm_md5 } from 'hash-wasm';
 import MD5 from 'md5.js';
 import SparkMD5 from 'spark-md5';
+import { Buffer } from 'safe-buffer';
 
 const init = async () => {
   let rustApp;
@@ -17,12 +18,12 @@ const init = async () => {
   const fileReader = new FileReader();
 
   input.addEventListener('change', () => {
-    fileReader.readAsDataURL(input.files[0]);
+    fileReader.readAsArrayBuffer(input.files[0]);
     document.getElementById('file-name').innerText = input.files[0].name;
   });
 
   fileReader.onloadend = () => {
-    base64 = fileReader.result.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
+    base64 = Buffer.from(fileReader.result);
   };
 
   const calcMd5WithMd5Wasm = () => {
@@ -64,45 +65,87 @@ const init = async () => {
   };
 
   const calcMd5WithNodeMd5 = () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const t0 = window.performance.now();
-        const md5 = new MD5();
-        const md5Web = md5.update(base64).digest('hex');
-        const t1 = window.performance.now();
-        document.getElementById('result-md5').innerText = t1 - t0;
+    const md5 = new MD5();
+
+    return processFile({
+      file: input.files[0],
+      process: (slice) => {
+        md5.update(Buffer.from(slice));
+      },
+      processDone: (delta) => {
+        md5.end();
+        const md5Web = Buffer.from(md5.read()).toString('hex');
+        document.getElementById('result-md5').innerText = delta;
         document.getElementById('checksum-md5').innerText = md5Web;
-        console.log('md5', { delta: t1 - t0, md5: md5Web });
-        resolve({ delta: t1 - t0, md5: md5Web });
-      });
+        console.log('spark-md5', { delta, md5: md5Web });
+      },
     });
   };
 
   const calcMd5WithSparkMd5 = () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const t0 = window.performance.now();
-        const md5Web = SparkMD5.hash(base64);
-        const t1 = window.performance.now();
-        document.getElementById('result-spark-md5').innerText = t1 - t0;
+    const md5 = new SparkMD5.ArrayBuffer();
+    return processFile({
+      file: input.files[0],
+      process: (slice) => {
+        md5.append(slice);
+      },
+
+      processDone: (delta) => {
+        const md5Web = Buffer.from(md5.end(true), 'binary').toString('hex');
+        md5.destroy();
+        document.getElementById('result-spark-md5').innerText = delta;
         document.getElementById('checksum-spark-md5').innerText = md5Web;
-        console.log('spark-md5', { delta: t1 - t0, md5: md5Web });
-        resolve({ delta: t1 - t0, md5: md5Web });
-      });
+        console.log('spark-md5', { delta, md5: md5Web });
+      },
     });
   };
 
   document.getElementById('run-all').addEventListener('click', async function () {
     this.classList.add('is-loading');
     this.setAttribute('disabled', 'disabled');
-    await calcMd5WithMd5Wasm();
-    await calcMd5WithCryptoWasm();
-    await calcMd5WithHashWasm();
-    await calcMd5WithNodeMd5();
-    await calcMd5WithSparkMd5();
+    try {
+      await calcMd5WithMd5Wasm();
+      await calcMd5WithCryptoWasm();
+      await calcMd5WithHashWasm();
+      await calcMd5WithNodeMd5();
+      await calcMd5WithSparkMd5();
+    } catch (e) {
+      console.log(e);
+    }
     this.classList.remove('is-loading');
     this.removeAttribute('disabled');
   });
 };
 
 document.addEventListener('DOMContentLoaded', init);
+
+const processFile = ({ file, process, processDone }) => {
+  const fileReader = new FileReader();
+  const chunkSize = 32 * 1048576; // 1048576 = 1MB
+  let chunks = Math.ceil(file.size / chunkSize);
+  let currentChunk = 0;
+
+  return new Promise((resolve) => {
+    fileReader.onload = function (e) {
+      process(e.target.result);
+      currentChunk++;
+
+      if (currentChunk < chunks) {
+        loadNext();
+      } else {
+        const t1 = window.performance.now();
+        processDone(t1 - t0);
+        resolve();
+      }
+    };
+
+    function loadNext() {
+      const start = currentChunk * chunkSize,
+        end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+
+      fileReader.readAsArrayBuffer(file.slice(start, end));
+    }
+    const t0 = window.performance.now();
+    loadNext();
+  });
+};

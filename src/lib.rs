@@ -11,14 +11,14 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub fn md5(str: &str) -> String {
-    let digest = md5::compute(str);
+pub fn md5(input: &[u8]) -> String {
+    let digest = md5::compute(input);
     format!("{:x}", digest)
 }
 
 #[wasm_bindgen]
-pub fn ya_md5(input: &str) -> String {
+pub fn ya_md5(input: &[u8]) -> String {
     let mut hasher = Md5::new();
-    hasher.input_str(input);
+    hasher.input(input);
     hasher.result_str()
 }
