@@ -3,9 +3,11 @@ import MD5 from 'md5.js';
 import SparkMD5 from 'spark-md5';
 import { Buffer } from 'safe-buffer';
 
+import { processFile } from './processFile';
+
 const init = async () => {
   let rustApp;
-  let base64;
+  let fileBuffer;
 
   try {
     rustApp = await import('../pkg');
@@ -23,14 +25,14 @@ const init = async () => {
   });
 
   fileReader.onloadend = () => {
-    base64 = Buffer.from(fileReader.result);
+    fileBuffer = Buffer.from(fileReader.result);
   };
 
   const calcMd5WithMd5Wasm = () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const t0 = window.performance.now();
-        const md5Wasm = rustApp.md5(base64);
+        const md5Wasm = rustApp.md5(fileBuffer);
         const t1 = window.performance.now();
         document.getElementById('result-rust-md5-wasm').innerText = t1 - t0;
         document.getElementById('checksum-rust-md5-wasm').innerText = md5Wasm;
@@ -44,7 +46,7 @@ const init = async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const t0 = window.performance.now();
-        const md5Wasm = rustApp.ya_md5(base64);
+        const md5Wasm = rustApp.ya_md5(fileBuffer);
         const t1 = window.performance.now();
         document.getElementById('result-rust-crypto-wasm').innerText = t1 - t0;
         document.getElementById('checksum-rust-crypto-wasm').innerText = md5Wasm;
@@ -56,7 +58,7 @@ const init = async () => {
 
   const calcMd5WithHashWasm = async () => {
     const t0 = window.performance.now();
-    const md5Wasm = await hash_wasm_md5(base64);
+    const md5Wasm = await hash_wasm_md5(fileBuffer);
     const t1 = window.performance.now();
     document.getElementById('result-hash-wasm').innerText = t1 - t0;
     document.getElementById('checksum-hash-wasm').innerText = md5Wasm;
@@ -72,30 +74,32 @@ const init = async () => {
       process: (slice) => {
         md5.update(Buffer.from(slice));
       },
-      processDone: (delta) => {
+      processDone: (delta, resolve) => {
         md5.end();
         const md5Web = Buffer.from(md5.read()).toString('hex');
         document.getElementById('result-md5').innerText = delta;
         document.getElementById('checksum-md5').innerText = md5Web;
         console.log('spark-md5', { delta, md5: md5Web });
+        resolve({ delta, md5: md5Web });
       },
     });
   };
 
   const calcMd5WithSparkMd5 = () => {
     const md5 = new SparkMD5.ArrayBuffer();
+
     return processFile({
       file: input.files[0],
       process: (slice) => {
         md5.append(slice);
       },
-
-      processDone: (delta) => {
+      processDone: (delta, resolve) => {
         const md5Web = Buffer.from(md5.end(true), 'binary').toString('hex');
         md5.destroy();
         document.getElementById('result-spark-md5').innerText = delta;
         document.getElementById('checksum-spark-md5').innerText = md5Web;
         console.log('spark-md5', { delta, md5: md5Web });
+        resolve({ delta, md5: md5Web });
       },
     });
   };
@@ -118,34 +122,3 @@ const init = async () => {
 };
 
 document.addEventListener('DOMContentLoaded', init);
-
-const processFile = ({ file, process, processDone }) => {
-  const fileReader = new FileReader();
-  const chunkSize = 32 * 1048576; // 1048576 = 1MB
-  let chunks = Math.ceil(file.size / chunkSize);
-  let currentChunk = 0;
-
-  return new Promise((resolve) => {
-    fileReader.onload = function (e) {
-      process(e.target.result);
-      currentChunk++;
-
-      if (currentChunk < chunks) {
-        loadNext();
-      } else {
-        const t1 = window.performance.now();
-        processDone(t1 - t0);
-        resolve();
-      }
-    };
-
-    function loadNext() {
-      const start = currentChunk * chunkSize,
-        end = start + chunkSize >= file.size ? file.size : start + chunkSize;
-
-      fileReader.readAsArrayBuffer(file.slice(start, end));
-    }
-    const t0 = window.performance.now();
-    loadNext();
-  });
-};
