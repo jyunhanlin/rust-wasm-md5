@@ -104,7 +104,21 @@ const init = async () => {
     });
   };
 
+  const cleanResult = () => {
+    document.getElementById('result-rust-md5-wasm').innerText = '';
+    document.getElementById('checksum-rust-md5-wasm').innerText = '';
+    document.getElementById('result-rust-crypto-wasm').innerText = '';
+    document.getElementById('checksum-rust-crypto-wasm').innerText = '';
+    document.getElementById('result-hash-wasm').innerText = '';
+    document.getElementById('checksum-hash-wasm').innerText = '';
+    document.getElementById('result-md5').innerText = '';
+    document.getElementById('checksum-md5').innerText = '';
+    document.getElementById('result-spark-md5').innerText = '';
+    document.getElementById('checksum-spark-md5').innerText = '';
+  };
+
   document.getElementById('run-all').addEventListener('click', async function () {
+    cleanResult();
     this.classList.add('is-loading');
     this.setAttribute('disabled', 'disabled');
     try {
