@@ -133,6 +133,14 @@ const init = async () => {
     this.classList.remove('is-loading');
     this.removeAttribute('disabled');
   });
+
+  document.getElementById('show-bundle-size').addEventListener('click', () => {
+    const bundleSizeEls = document.getElementsByClassName('bundle-size');
+    for (let i = 0; i < bundleSizeEls.length; i++) {
+      const el = bundleSizeEls[i];
+      el.classList.toggle('is-hidden');
+    }
+  });
 };
 
 document.addEventListener('DOMContentLoaded', init);
