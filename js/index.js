@@ -79,7 +79,7 @@ const init = async () => {
         const md5Web = Buffer.from(md5.read()).toString('hex');
         document.getElementById('result-md5').innerText = delta;
         document.getElementById('checksum-md5').innerText = md5Web;
-        console.log('spark-md5', { delta, md5: md5Web });
+        console.log('md5', { delta, md5: md5Web });
         resolve({ delta, md5: md5Web });
       },
     });
